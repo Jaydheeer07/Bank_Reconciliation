@@ -39,25 +39,39 @@ This backend API is built using FastAPI and provides endpoints to interact with 
 4. Set up environment variables. Create a `.env` file in the root directory and add the necessary environment variables:
 
     ```ini
-    # Xero OAuth2 credentials
-    Client_ID="Your client ID" 
-    Client_Secret_Key="your client secret key"
+        # OAuth settings
+        CLIENT_ID="your_client_id"
+        CLIENT_SECRET_KEY="your_client_secret"
+        SECRET_KEY="your_secret_key"
 
-    # Session secret key
-    SECRET_KEY="session_secrete_key"
+        # Environment settings
+        ENV="development"
+        DEBUG=true
 
-    # Environment
-    ENV=development
+        # Brain settings
+        API_KEY="your_brain_api_key"
+        BRAIN_BASE_URL="your_brain_base_url"
 
-    # Application settings
-    DEBUG=True
+        # Frontend settings
+        FRONTEND_URL="your_frontend_url"
 
-    # Brain 
-    API_KEY ="API_KEY_BRAIN" 
-    BRAIN_BASE_URL = "BRAIN_URL"
+        # JWT settings
+        JWT_SECRET_KEY="your_jwt_secret"
+        JWT_ALGORITHM="HS256"
+        ACCESS_TOKEN_EXPIRE_MINUTES=30
+        REFRESH_TOKEN_EXPIRE_DAYS=30
 
-    # Frontend URl
-    FRONTEND_URL="URL_for_frontend"
+        # Database settings
+        DATABASE_URL="your_database_url"
+        MAX_LOGIN_ATTEMPTS=3
+        LOGIN_COOLDOWN_MINUTES=2
+
+        # Xero endpoints
+        XERO_METADATA_URL="https://identity.xero.com/.well-known/openid-configuration"
+        XERO_TOKEN_ENDPOINT="https://identity.xero.com/connect/token"
+
+        # OAuth Xero scope
+        SCOPE="offline_access openid profile email accounting.transactions accounting.journals.read accounting.transactions payroll.payruns accounting.reports.read files accounting.settings.read accounting.settings accounting.attachments payroll.payslip payroll.settings files.read openid assets.read profile payroll.employees projects.read email accounting.contacts.read accounting.attachments.read projects assets accounting.contacts payroll.timesheets accounting.budgets.read"
 
     ```
 
@@ -97,7 +111,7 @@ This backend API is built using FastAPI and provides endpoints to interact with 
 - **Description**: Get information about the currently selected account.
 - **Response**: JSON object with chosen account details.
 
-### 2. Retrieve Contacts
+### 2 . Retrieve Contacts
 - **Endpoint**: `/contacts`
 - **Method**: `GET`
 - **Description**: Retrieve a list of contacts.
