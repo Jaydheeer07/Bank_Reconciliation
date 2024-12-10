@@ -19,7 +19,7 @@ This backend API is built using FastAPI and provides endpoints to interact with 
 1. Clone the repository:
 
     ```sh
-    git clone [https://github.com/Dexterous-Group/Bank_Reconciliation.git](https://github.com/Jaydheeer07/Bank_Reconciliation.git)
+    git clone https://github.com/Jaydheeer07/Bank_Reconciliation.git
     cd backend
     ```
 
