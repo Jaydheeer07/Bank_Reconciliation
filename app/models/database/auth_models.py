@@ -1,5 +1,5 @@
 import re
-
+from uuid import UUID
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
@@ -7,6 +7,8 @@ class Token(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str
+    user_id: UUID
+    xero: dict | None = None
 
 
 class TokenData(BaseModel):
@@ -27,12 +29,12 @@ class PasswordReset(BaseModel):
     new_password: str = Field(..., min_length=8, max_length=100)
 
     @field_validator("new_password")
-    def validate_password(cls, v):
+    def validate_password(cls, password):
         if not re.match(
-            r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$", v
+            r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$", password
         ):
             raise ValueError(
                 "Password must contain at least 8 characters, "
                 "including one letter, one number, and one special character"
             )
-        return 
+        return password

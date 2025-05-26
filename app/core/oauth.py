@@ -1,28 +1,41 @@
 import logging
 from datetime import datetime, timedelta
+from typing import Any, Dict, Optional
 
 from authlib.integrations.starlette_client import OAuth
-from fastapi import HTTPException, Request
+from fastapi import Depends, HTTPException, Request, status
+from sqlalchemy.orm import Session
 from xero_python.api_client import ApiClient
 from xero_python.api_client.configuration import Configuration
-from xero_python.api_client.oauth2 import OAuth2Token, TokenApi
+from xero_python.api_client.oauth2 import OAuth2Token
 
-from app.config import app, settings
+from app.config import settings
+from app.core.deps import get_current_user, get_db
+from app.models.database.schema_models import User
+from app.services.xero.token_manager import token_manager
 
 logger = logging.getLogger(__name__)
 
 oauth = OAuth()
+
 oauth.register(
     name="xero",
     client_id=settings.client_id,
     client_secret=settings.client_secret_key,
     server_metadata_url=settings.xero_metadata_url,
-    client_kwargs={"scope": settings.scope},
+    client_kwargs={
+        "scope": settings.scope,
+        "token_endpoint": settings.xero_token_endpoint,
+    },
+    authorize_params={"response_type": "code"},
 )
+
+# Add debug logging after registration
+logger.info("OAuth client registration completed")
 
 api_client = ApiClient(
     Configuration(
-        debug=True,
+        debug=False,
         oauth2_token=OAuth2Token(
             client_id=settings.client_id,
             client_secret=settings.client_secret_key,
@@ -46,82 +59,63 @@ def create_token_dict(token):
 
 
 @api_client.oauth2_token_getter
-def obtain_xero_oauth2_token():
-    """Get the token from the session."""
-    if hasattr(app.state, "token"):
-        token_dict = app.state.token
-        if "expires_at" in token_dict and token_dict["expires_at"] is not None:
-            expiration_time = datetime.fromtimestamp(token_dict["expires_at"])
-            logger.info(f"Token expires at: {expiration_time}")
-        else:
-            logger.warning("Token expiration time is not set.")
-        # Ensure scope is included in the token
-        if "scope" not in token_dict:
-            token_dict["scope"] = settings.scope
-        return token_dict
-    return None
+def obtain_xero_oauth2_token() -> Optional[Dict[str, Any]]:
+    """
+    Get the current OAuth2 token using the token manager.
+    Returns None if no token exists.
+    """
+    try:
+        return token_manager.get_current_token()
+    except Exception as e:
+        logger.error(f"Error retrieving token: {str(e)}", exc_info=True)
+        return None
 
 
-@api_client.oauth2_token_saver
-def store_xero_oauth2_token(token):
-    """Store the token in the session."""
-    if token is None:
-        app.state.token = None
-        logger.info("Token cleared from session.")
-    else:
-        token_dict = token if isinstance(token, dict) else token
-        token_dict["scope"] = settings.scope  # Ensure scope is always included
-        app.state.token = token_dict
-        logger.info(f"Token stored: {token_dict}")
-
-def is_token_expired(token: dict) -> bool:
-    """Check if the token is expired or about to expire in the next 60 seconds."""
-    if not token or "expires_at" not in token:
-        return True
-    return datetime.now().timestamp() >= (token["expires_at"] - 60)
-
-
-async def refresh_token_if_expired():
-    """Refresh the token if it's expired."""
-    token = obtain_xero_oauth2_token()
-    logger.info(f"Current token: {token}")
-
-    if token:
-        logger.info("Attempting to refresh token.")
-        try:
-            # Create a TokenApi instance
-            token_api = TokenApi(
-                api_client, settings.client_id, settings.client_secret_key
-            )
-
-            # Prepare refresh token request
-            new_token = token_api.refresh_token(
-                refresh_token=token.get("refresh_token"),
-                scope=settings.scope,
-            )
-
-            if new_token:
-                new_token_dict = create_token_dict(new_token)
-                store_xero_oauth2_token(new_token_dict)
-                logger.info(f"Token refreshed successfully: {new_token_dict}")
-                return new_token_dict
-            else:
-                logger.error("Failed to refresh token: No new token received")
-                return None
-        except Exception as e:
-            logger.error(f"Error refreshing token: {str(e)}", exc_info=True)
-            # Don't set token to None if refresh fails, keep the old token
+async def refresh_token_if_expired(request: Request, current_user: User):
+    """
+    Refresh the token if it's expired.
+    Args:
+        request: The FastAPI request object
+        current_user: The authenticated user
+    Returns:
+        The refreshed token if successful, None otherwise
+    """
+    try:
+        token = token_manager.get_current_token(str(current_user.id))
+        if token:
             return token
-    return token
+        return None
+    except Exception as e:
+        logger.error(f"Error in refresh_token_if_expired: {str(e)}", exc_info=True)
+        return None
 
 
-async def require_valid_token(request: Request):
+async def require_valid_token(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     """Dependency to ensure a valid token exists."""
-    token = await refresh_token_if_expired()
+    token = await refresh_token_if_expired(request, current_user)
     if not token:
         raise HTTPException(
-            status_code=401,
-            detail="Authentication required",
-            headers={"Location": "/login"},
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No valid Xero token found",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     return token
+
+
+def store_xero_oauth2_token(
+    token: Optional[Dict[str, Any]], user_id: Optional[str] = None
+) -> None:
+    """
+    Store the OAuth2 token using the token manager.
+    Args:
+        token: The OAuth2 token to store, or None to clear the token
+        user_id: The ID of the user who owns this token
+    """
+    if token and user_id:
+        token_manager.store_token(token, user_id)
+    elif user_id:
+        token_manager.invalidate_token(user_id)

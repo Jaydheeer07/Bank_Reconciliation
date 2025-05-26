@@ -20,6 +20,25 @@ default_settings = {
         },
     },
     "loggers": {
-        "": {"handlers": ["default", "file"], "level": "INFO", "propagate": True}
+        "": {
+            "handlers": ["default", "file"],
+            "level": "INFO",
+            "propagate": True
+        },
+        "httpx": {
+            "handlers": ["default", "file"],
+            "level": "WARNING",
+            "propagate": False
+        },
+        "xero_python": {
+            "handlers": ["default", "file"],
+            "level": "WARNING",
+            "propagate": False
+        },
+        "urllib3": {
+            "handlers": ["default", "file"],
+            "level": "WARNING",
+            "propagate": False
+        }
     },
 }

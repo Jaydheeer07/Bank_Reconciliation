@@ -3,9 +3,9 @@ from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
-Base = declarative_base()
+from app.database import Base
 
 
 class User(Base):
@@ -29,6 +29,14 @@ class User(Base):
     last_failed_login = Column(DateTime, nullable=True)
     locked_until = Column(DateTime, nullable=True)
     last_successful_login = Column(DateTime, nullable=True)
+    brain_name = Column(String, nullable=True)
+    brain_id = Column(String, nullable=True)
+
+    # Relationship with tenant metadata
+    tenants = relationship("TenantMetadata", back_populates="user")
+
+    # Add relationship for Xero states
+    xero_states = relationship("XeroState", back_populates="user", cascade="all, delete-orphan")
 
 
 class PasswordResetToken(Base):
@@ -49,7 +57,7 @@ class RefreshToken(Base):
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     token = Column(String, unique=True, nullable=False, index=True)
-    expires_at = Column(DateTime, nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
     is_revoked = Column(Boolean, default=False)
 

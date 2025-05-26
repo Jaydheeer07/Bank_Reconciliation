@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, Dict, List, Union
 
 from pydantic import BaseModel
 
@@ -11,3 +11,9 @@ class BrainCreateRequest(BaseModel):
 class ReconciliationVerification(BaseModel):
     statementId: str
     invoiceIds: List[str]
+
+
+class TextProcessRequest(BaseModel):
+    text: Union[str, Dict[str, Any]]
+    brain_id: str
+    document_type: str

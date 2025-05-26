@@ -29,6 +29,10 @@ class UserResponse(BaseModel):
     last_login: datetime | None
     is_superuser: bool
     role: str | None
+    brain_name: str | None
+    brain_id: str | None
+    xero_authenticated: bool | None = None
+    active_tenant_id: str | None = None
 
     class Config:
         from_attributes = True

@@ -1,0 +1,1132 @@
+{
+    "info": {
+        "name": "Bank Reconciliation API",
+        "description": "Collection for testing Bank Reconciliation API endpoints",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_postman_id": "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6"
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "description": "Authentication related endpoints",
+            "item": [
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/x-www-form-urlencoded"
+                            }
+                        ],
+                        "body": {
+                            "mode": "urlencoded",
+                            "urlencoded": [
+                                {
+                                    "key": "username",
+                                    "value": "user@example.com",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "password",
+                                    "value": "your_password",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "login"]
+                        },
+                        "description": "Login with username and password. Response includes app tokens and Xero tokens if connected."
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "urlencoded",
+                                    "urlencoded": [
+                                        {
+                                            "key": "username",
+                                            "value": "user@example.com",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "key": "password",
+                                            "value": "your_password",
+                                            "type": "text"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [],
+                            "cookie": [],
+                            "body": {
+                                "access_token": "app_access_token",
+                                "refresh_token": "app_refresh_token",
+                                "token_type": "bearer",
+                                "user_id": "user_uuid",
+                                "xero": {
+                                    "access_token": "xero_access_token",
+                                    "refresh_token": "xero_refresh_token",
+                                    "expires_at": "2025-02-12T02:37:33+00:00",
+                                    "token_type": "Bearer",
+                                    "tenant_id": "xero_tenant_id"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"token\": \"{{refreshToken}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/refresh",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "refresh"]
+                        },
+                        "description": "Refresh access token using refresh token"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/logout",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "logout"]
+                        },
+                        "description": "Logs out the user by blacklisting the current access token, removing all refresh tokens, and clearing authentication cookies. The token will be invalidated and cannot be reused even if it hasn't expired."
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{accessToken}}",
+                                        "type": "text"
+                                    }
+                                ]
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [],
+                            "cookie": [],
+                            "body": {
+                                "message": "Successfully logged out"
+                            }
+                        },
+                        {
+                            "name": "Unauthorized Response",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": []
+                            },
+                            "status": "Unauthorized",
+                            "code": 401,
+                            "_postman_previewlanguage": "json",
+                            "header": [],
+                            "cookie": [],
+                            "body": {
+                                "detail": "Could not validate credentials"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Request Password Reset",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/forgot-password",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "forgot-password"]
+                        },
+                        "description": "Request password reset email"
+                        },
+                    "response": []
+                },
+                {
+                    "name": "Reset Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"token\": \"reset_token_from_email\",\n    \"new_password\": \"new_password\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/reset-password",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "reset-password"]
+                        },
+                        "description": "Reset password using token"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "User Management",
+            "description": "User management related endpoints",
+            "item": [
+                {
+                    "name": "Register User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"your_password\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/register",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "register"]
+                        },
+                        "description": "Register a new user with email and password"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Current User",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/me",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "me"]
+                        },
+                        "description": "Get current user profile"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/users?skip=0&limit=100",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "users"],
+                            "query": [
+                                {
+                                    "key": "skip",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "100"
+                                }
+                            ]
+                        },
+                        "description": "Get all users (requires superuser permissions)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Xero Integration",
+            "description": "Xero OAuth and token management endpoints",
+            "item": [
+                {
+                    "name": "Connect to Xero",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/xero/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "xero", "auth", "login"]
+                        },
+                        "description": "Initiates Xero OAuth flow. Will redirect to Xero login page."
+                    }
+                },
+                {
+                    "name": "Refresh Xero Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/xero/auth/refresh",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "xero", "auth", "refresh"]
+                        },
+                        "description": "Refresh Xero access token when it's close to expiring"
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": []
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [],
+                            "cookie": [],
+                            "body": {
+                                "status": "success",
+                                "message": "Token refreshed successfully",
+                                "token": {
+                                    "access_token": "new_xero_access_token",
+                                    "expires_at": "2025-02-12T03:37:33+00:00",
+                                    "token_type": "Bearer"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Re-auth Required Response",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": []
+                            },
+                            "status": "Unauthorized",
+                            "code": 401,
+                            "_postman_previewlanguage": "json",
+                            "header": [],
+                            "cookie": [],
+                            "body": {
+                                "status": "re-auth-required",
+                                "message": "Your Xero session has expired. Please re-authenticate.",
+                                "redirect_url": "/api/v1/xero/auth/login"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Xero Integration",
+            "description": "Endpoints for Xero integration. NOTE: Initial authentication must be done through a web browser at http://localhost:8000/api/v1/xero/auth/login",
+            "item": [
+                {
+                    "name": "Check Auth Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/xero/auth/",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "xero", "auth", ""]
+                        },
+                        "description": "Check if you're currently authenticated with Xero. Use this after completing browser authentication to verify your session status."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login (Browser Only - Do Not Use in Postman)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/xero/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "xero", "auth", "login"]
+                        },
+                        "description": "\u26A0\uFE0F DO NOT USE THIS IN POSTMAN \u26A0\uFE0F\nThis endpoint must be accessed through a web browser at:\nhttp://localhost:8000/api/v1/xero/auth/login\n\nThe OAuth2 flow requires browser interaction and cannot be completed in Postman."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/xero/auth/refresh",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "xero", "auth", "refresh"]
+                        },
+                        "description": "Refresh your Xero OAuth token when it expires. This will return a new access token that can be used for subsequent requests."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/xero/auth/logout",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "v1", "xero", "auth", "logout"]
+                        },
+                        "description": "Log out from Xero by clearing the stored tokens and session data."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Tenants",
+                    "description": "Tenant management related endpoints",
+                    "item": [
+                        {
+                            "name": "List All Tenants",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/tenants",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "tenants"]
+                                },
+                                "description": "Get a list of all available Xero organizations/tenants"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Set Active Tenant",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/tenants/:tenant_id/activate",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "tenants", ":tenant_id", "activate"],
+                                    "variable": [
+                                        {
+                                            "key": "tenant_id",
+                                            "value": "",
+                                            "description": "ID of the tenant to set as active"
+                                        }
+                                    ]
+                                },
+                                "description": "Set the active Xero tenant for subsequent operations"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Active Tenant",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/tenants/active",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "tenants", "active"]
+                                },
+                                "description": "Get the currently active Xero tenant"
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Bank Accounts",
+                    "description": "Bank account management related endpoints. Make sure to select an active tenant before using these endpoints.",
+                    "item": [
+                        {
+                            "name": "List All Bank Accounts",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/accounts",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "accounts"]
+                                },
+                                "description": "Get a list of all active bank accounts for the current tenant"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Set Active Bank Account",
+                            "request": {
+                                "method": "PUT",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/accounts/active/:account_id",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "accounts", "active", ":account_id"],
+                                    "variable": [
+                                        {
+                                            "key": "account_id",
+                                            "value": "",
+                                            "description": "ID of the bank account to set as active"
+                                        }
+                                    ]
+                                },
+                                "description": "Set the active bank account for transaction retrieval"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Active Bank Account",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/accounts/active",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "accounts", "active"]
+                                },
+                                "description": "Get information about the currently active bank account"
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Contacts",
+                    "description": "Contact management related endpoints. Make sure to select an active tenant before using these endpoints.",
+                    "item": [
+                        {
+                            "name": "List All Contacts",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/contacts",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "contacts"]
+                                },
+                                "description": "Get a list of all contacts for the current tenant"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Contact by ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/contacts/:contact_id",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "contacts", ":contact_id"],
+                                    "variable": [
+                                        {
+                                            "key": "contact_id",
+                                            "value": "",
+                                            "description": "The ID of the contact to retrieve"
+                                        }
+                                    ]
+                                },
+                                "description": "Get details of a specific contact by their ID"
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Invoices",
+                    "description": "Invoice management related endpoints. Make sure to select an active tenant before using these endpoints.",
+                    "item": [
+                        {
+                            "name": "List All Invoices",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/invoices",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "invoices"]
+                                },
+                                "description": "Get a list of all invoices for the current tenant"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Invoice by ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/invoices/:invoice_id",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "invoices", ":invoice_id"],
+                                    "variable": [
+                                        {
+                                            "key": "invoice_id",
+                                            "value": "",
+                                            "description": "The ID of the invoice to retrieve"
+                                        }
+                                    ]
+                                },
+                                "description": "Get details of a specific invoice by its ID"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Invoice",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"invoices\": [\n    {\n      \"type\": \"ACCREC\",\n      \"contact\": {\n        \"contact_id\": \"xxx-xxx-xxx\"\n      },\n      \"line_items\": [\n        {\n          \"description\": \"Sample Item\",\n          \"quantity\": 1,\n          \"unit_amount\": 100.00,\n          \"account_code\": \"200\",\n          \"tax_type\": \"OUTPUT\"\n        }\n      ],\n      \"date\": \"2024-12-14\",\n      \"due_date\": \"2024-12-28\",\n      \"invoice_number\": \"INV-001\",\n      \"status\": \"DRAFT\",\n      \"currency_code\": \"NZD\",\n      \"reference\": \"REF001\"\n    }\n  ]\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/invoices/create",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "invoices", "create"]
+                                },
+                                "description": "Create a new invoice for the current tenant"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Invoice Attachment",
+                            "request": {
+                                "method": "PUT",
+                                "header": [],
+                                "body": {
+                                    "mode": "formdata",
+                                    "formdata": [
+                                        {
+                                            "key": "file",
+                                            "type": "file",
+                                            "src": []
+                                        }
+                                    ]
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/invoices/attachment/:invoice_id",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "invoices", "attachment", ":invoice_id"],
+                                    "variable": [
+                                        {
+                                            "key": "invoice_id",
+                                            "value": "",
+                                            "description": "The ID of the invoice to attach the file to"
+                                        }
+                                    ]
+                                },
+                                "description": "Upload a file attachment for a specific invoice"
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Organisation",
+                    "description": "Organisation management related endpoints. Make sure to select an active tenant before using these endpoints.",
+                    "item": [
+                        {
+                            "name": "List All Organisations",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/xero/organisations",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "xero", "organisations"]
+                                },
+                                "description": "Get a list of all organisations for the current tenant"
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Scheduled Tasks",
+                    "description": "Endpoints for managing scheduled invoice processing",
+                    "item": [
+                        {
+                            "name": "Start Invoice Processing",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/scheduled/start-invoice-processing?brain_id={{brain_id}}",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["scheduled", "start-invoice-processing"],
+                                    "query": [
+                                        {
+                                            "key": "brain_id",
+                                            "value": "{{brain_id}}",
+                                            "description": "ID of the brain to process invoices with"
+                                        }
+                                    ]
+                                },
+                                "description": "Start the scheduled processing of Xero invoices. The schedule is configured through the application settings."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Stop Invoice Processing",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/scheduled/stop-invoice-processing",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["scheduled", "stop-invoice-processing"]
+                                },
+                                "description": "Stop the scheduled processing of Xero invoices"
+                            },
+                            "response": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Brain Management",
+            "description": "Brain related endpoints",
+            "item": [
+                {
+                    "name": "Me",
+                    "description": "Brain management endpoints",
+                    "item": [
+                        {
+                            "name": "List Brains",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/brain/me?start=0&limit=20&sort=desc",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "brain", "me"],
+                                    "query": [
+                                        {
+                                            "key": "start",
+                                            "value": "0",
+                                            "description": "Starting index for pagination"
+                                        },
+                                        {
+                                            "key": "limit",
+                                            "value": "20",
+                                            "description": "Number of items per page"
+                                        },
+                                        {
+                                            "key": "sort",
+                                            "value": "desc",
+                                            "description": "Sort order: 'asc' or 'desc'"
+                                        }
+                                    ]
+                                },
+                                "description": "List all brains with pagination support"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Brain by ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/brain/me/:brain_id",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "brain", "me", ":brain_id"],
+                                    "variable": [
+                                        {
+                                            "key": "brain_id",
+                                            "value": "your-brain-id-here",
+                                            "description": "ID of the brain to retrieve. Replace with an actual brain ID."
+                                        }
+                                    ]
+                                },
+                                "description": "Get details of a specific brain by its ID. The brain ID can be set in the path variables of this request."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Create Brain",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"string\",\n    \"description\": \"string\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/brain/me/create",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "brain", "me", "create"]
+                                },
+                                "description": "Create a new brain with the specified details"
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Files",
+                    "description": "File management related endpoints",
+                    "item": [
+                        {
+                            "name": "List Files",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/brain/files?brain_id=:brain_id&start=0&limit=20&sort=desc&filter_by=all",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "brain", "files"],
+                                    "query": [
+                                        {
+                                            "key": "brain_id",
+                                            "value": ":brain_id",
+                                            "description": "Brain ID to filter files"
+                                        },
+                                        {
+                                            "key": "start",
+                                            "value": "0",
+                                            "description": "Starting index for pagination"
+                                        },
+                                        {
+                                            "key": "limit",
+                                            "value": "20",
+                                            "description": "Number of items per page"
+                                        },
+                                        {
+                                            "key": "sort",
+                                            "value": "desc",
+                                            "description": "Sort order: 'asc' or 'desc'"
+                                        },
+                                        {
+                                            "key": "filter_by",
+                                            "value": "all",
+                                            "description": "Filter by: 'invoice', 'statement', or 'all'"
+                                        }
+                                    ]
+                                },
+                                "description": "List all documents in a brain with optional filters and pagination"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Upload File",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "formdata",
+                                    "formdata": [
+                                        {
+                                            "key": "file",
+                                            "type": "file",
+                                            "src": [],
+                                            "description": "The file to upload"
+                                        },
+                                        {
+                                            "key": "brain_id",
+                                            "value": "your-brain-id-here",
+                                            "type": "text",
+                                            "description": "Brain ID to associate the file with"
+                                        },
+                                        {
+                                            "key": "document_type",
+                                            "value": "invoice",
+                                            "type": "text",
+                                            "description": "Type of document (either 'invoice' or 'statement')"
+                                        }
+                                    ]
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/brain/files/upload",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "brain", "files", "upload"]
+                                },
+                                "description": "Upload a document to a specific brain"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get File by ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/brain/files/:file_id",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "brain", "files", ":file_id"],
+                                    "variable": [
+                                        {
+                                            "key": "file_id",
+                                            "value": "your-file-id-here",
+                                            "description": "ID of the file to retrieve"
+                                        }
+                                    ]
+                                },
+                                "description": "Get details of a specific file by its ID"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Process Text",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"brain_id\": \"{{brain_id}}\",\n    \"document_type\": \"invoice\",\n    \"text\": {\n        \"Invoices\": []\n    }\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/brain/files/text/process",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["brain", "files", "text", "process"]
+                                },
+                                "description": "Process text content through the brain API. The text can be either a JSON string or object. For invoices, include an Invoices array in the text."
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Transactions",
+                    "description": "Transaction management endpoints",
+                    "item": [
+                        {
+                            "name": "Get Invoice Transactions",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/brain/transactions/invoices?brain_id=:brain_id&start=0&limit=20&sort=desc",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "brain", "transactions", "invoices"],
+                                    "query": [
+                                        {
+                                            "key": "brain_id",
+                                            "value": ":brain_id",
+                                            "description": "Brain ID to filter transactions"
+                                        },
+                                        {
+                                            "key": "start",
+                                            "value": "0",
+                                            "description": "Starting index for pagination"
+                                        },
+                                        {
+                                            "key": "limit",
+                                            "value": "20",
+                                            "description": "Number of items per page"
+                                        },
+                                        {
+                                            "key": "sort",
+                                            "value": "desc",
+                                            "description": "Sort order: 'asc' or 'desc'"
+                                        }
+                                    ]
+                                },
+                                "description": "Get paginated invoice transactions for a brain"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Statement Transactions",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/brain/transactions/statements?brain_id=:brain_id&start=0&limit=20&sort=desc",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "brain", "transactions", "statements"],
+                                    "query": [
+                                        {
+                                            "key": "brain_id",
+                                            "value": ":brain_id",
+                                            "description": "Brain ID to filter transactions"
+                                        },
+                                        {
+                                            "key": "start",
+                                            "value": "0",
+                                            "description": "Starting index for pagination"
+                                        },
+                                        {
+                                            "key": "limit",
+                                            "value": "20",
+                                            "description": "Number of items per page"
+                                        },
+                                        {
+                                            "key": "sort",
+                                            "value": "desc",
+                                            "description": "Sort order: 'asc' or 'desc'"
+                                        }
+                                    ]
+                                },
+                                "description": "Get paginated statement transactions for a brain"
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Reconciliation",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/brain/transactions/recon?brain_id=:brain_id&start_period=0&filter_by=all",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "brain", "transactions", "recon"],
+                                    "query": [
+                                        {
+                                            "key": "brain_id",
+                                            "value": ":brain_id",
+                                            "description": "Brain ID for reconciliation"
+                                        },
+                                        {
+                                            "key": "start_period",
+                                            "value": "0",
+                                            "description": "Start of the period (Unix timestamp)"
+                                        },
+                                        {
+                                            "key": "filter_by",
+                                            "value": "all",
+                                            "description": "Filter: 'all' or 'verified'"
+                                        }
+                                    ]
+                                },
+                                "description": "Get reconciliation data for a brain within a specified date range. The end_period parameter is optional and defaults to the current time if not provided."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Verify Reconciliation",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "[\n  {\n    \"statementId\": \"st_755e73c0-987d-45e1-8585-e1ed4e9e41bc\",\n    \"invoiceIds\": [\n      \"inv_741faef4-6c6c-4edd-a5b4-45b17ecaa436\"\n    ]\n  }\n]",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/v1/brain/transactions/verify",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["api", "v1", "brain", "transactions", "verify"]
+                                },
+                                "description": "Verify reconciled transactions by providing statement and invoice mappings"
+                            },
+                            "response": [
+                                {
+                                    "name": "Success Response",
+                                    "originalRequest": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "[\n  {\n    \"statementId\": \"st_755e73c0-987d-45e1-8585-e1ed4e9e41bc\",\n    \"invoiceIds\": [\n      \"inv_741faef4-6c6c-4edd-a5b4-45b17ecaa436\"\n    ]\n  }\n]",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        },
+                                        "url": "{{baseUrl}}/api/v1/brain/transactions/verify"
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n    \"message\": \"success\"\n}"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8000",
+            "type": "string"
+        },
+        {
+            "key": "accessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refreshToken",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}
